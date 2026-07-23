@@ -77,7 +77,35 @@ else:
         },
     )
 
+st.title("Layout spike — delete me later")
 
+# Use one of your real Supabase photo URLs here if you have one handy
+PHOTO = "https://hhnnwipifdnmgtrcddge.supabase.co/storage/v1/object/public/item-photos/92363877-154c-434e-9705-e2be8d381162.png"
+
+st.header("Option A — inline expander")
+st.image(PHOTO, width=250)
+st.subheader("Blue water bottle")
+st.write("Item-Id #12 · Bottles · found in Gym")
+with st.expander("Reserve this item"):
+    note_a = st.text_area("Who is this for?", placeholder="e.g. Maya, Room 12", key="a")
+    st.button("Confirm reservation", key="btn_a")
+
+st.divider()
+
+st.header("Option B — modal dialog")
+
+@st.dialog("Reserve this item")
+def reserve_modal():
+    st.write("**Item-Id #12 — Blue water bottle**")
+    note_b = st.text_area("Who is this for?", placeholder="e.g. Maya, Room 12", key="b")
+    if st.button("Confirm reservation", key="btn_b"):
+        st.rerun()
+
+st.image(PHOTO, width=250)
+st.subheader("Blue water bottle")
+st.write("Item-Id #12 · Bottles · found in Gym")
+if st.button("Reserve this item", key="open_modal"):
+    reserve_modal()
 
 
 

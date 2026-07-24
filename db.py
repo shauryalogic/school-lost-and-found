@@ -9,7 +9,7 @@ def get_supabase():
     key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
-
+supabase = get_supabase()
 
 
 def upload_photo(photo_file):

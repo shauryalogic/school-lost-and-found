@@ -23,7 +23,7 @@ def staff_logout():
 
 
 parent_page = st.Page("views/parent.py", title="Find an item", icon="🔎", default=True)
-staff_page = st.Page("views/staff.py", title="Log items", icon="📋")
+staff_page = st.Page("views/staff.py", title="Staff Page", icon="📋")
 login_page = st.Page(staff_login, title="Staff sign-in", icon="🔑")
 logout_page = st.Page(staff_logout, title="Sign out", icon="🚪")
 

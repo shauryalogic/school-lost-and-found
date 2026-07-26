@@ -56,7 +56,9 @@ def unreserve_dialog(item):
             st.rerun()
 
 
-def item_card(item, button_label, button_key, on_click, extra_line=None):
+def item_card(item, button_label, button_key, extra_line=None):
+    # One card design, used by both tabs. It draws the item and returns
+    # True if its button was clicked — that's all. 
     with st.container(border=True):
         photo_col, text_col = st.columns([1, 2])
         with photo_col:
@@ -70,14 +72,17 @@ def item_card(item, button_label, button_key, on_click, extra_line=None):
             )
             if extra_line:
                 st.caption(extra_line)
-        if st.button(button_label, key=button_key):
-            on_click(item)
-
+        return st.button(button_label, key=button_key)
 
 count = len(st.session_state.my_reservations)
 tab_all, tab_mine = st.tabs(["All items", f"My reservations ({count})"])
 
 with tab_all:
+    query = st.text_input(
+        "Search",
+        placeholder="Search by name, description, or category",
+        label_visibility="collapsed",
+    )
     result = (
         supabase.table("items")
         .select("*")
@@ -87,8 +92,20 @@ with tab_all:
     )
     items = result.data
 
+    # Parent search — only the public fields. NOT reservation_comments,
+    # because that holds children's names and must never be searchable here.
+    if query:
+        q = query.lower()
+        items = [
+            it for it in items
+            if q in str(it.get("item_number") or "").lower()
+            or q in (it.get("name") or "").lower()
+            or q in (it.get("description") or "").lower()
+            or q in (it.get("category") or "").lower()
+        ]
+
     if not items:
-        st.info("No items are available right now.")
+        st.info("No matching items are available right now.")
     else:
         per_page = 5
         total_pages = (len(items) + per_page - 1) // per_page
@@ -96,12 +113,8 @@ with tab_all:
         start = (page - 1) * per_page
 
         for item in items[start : start + per_page]:
-            item_card(
-                item,
-                "Reserve this item",
-                f"reserve_{item['id']}",
-                reserve_dialog,
-            )
+            if item_card(item, "Reserve this item", f"reserve_{item['id']}"):
+                reserve_dialog(item)
 
 with tab_mine:
     ids = st.session_state.my_reservations
@@ -122,10 +135,6 @@ with tab_mine:
         else:
             st.success("Show the Item-Id at the front desk to collect.")
             for item in mine:
-                item_card(
-                    item,
-                    "Un-reserve",
-                    f"unreserve_{item['id']}",
-                    unreserve_dialog,
-                    extra_line=f"For: {item.get('reservation_comments') or '—'}",
-                )
+                # If this card's Un-reserve button was clicked, open the confirm popup.
+                if item_card(item, "Un-reserve", f"unreserve_{item['id']}", extra_line=f"For: {item.get('reservation_comments') or '—'}"):
+                    unreserve_dialog(item)

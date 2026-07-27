@@ -3,22 +3,77 @@ import uuid
 import streamlit as st
 from supabase import create_client
 
-@st.cache_resource
-def get_supabase():
+
+def _new_client():
+    # Build a fresh Supabase client.
+    # We do NOT cache this anymore. Before auth, one shared client was fine because
+    # everyone was anonymous. Now the client carries WHO is logged in, so a shared
+    # client would leak one person's login to everyone. Each run gets its own.
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
-supabase = get_supabase()
+
+def get_supabase():
+    # The client the pages use. If someone is logged in, we attach their login
+    # so the database knows who is asking (that's what makes the RLS rules work).
+    client = _new_client()
+    if "access_token" in st.session_state:
+        client.auth.set_session(
+            st.session_state.access_token,
+            st.session_state.refresh_token,
+        )
+    return client
 
 
-def upload_photo(photo_file):
-    """Upload an image to Supabase Storage and return its public URL."""
-    image_bytes = photo_file.getvalue() # raw image data
-    content_type = photo_file.type or "image/jpeg" # e.g. "image/png"
-    extension = content_type.split("/")[-1] # "png" or "jpeg"
-    file_name = f"{uuid.uuid4()}.{extension}" # unique name, e.g. "3f9c...a1.
+def current_user():
+    # The logged-in user's id, or None. Used to stamp/read reservations.
+    return st.session_state.get("user_id")
+
+
+def sign_up(email, password):
+    # Create a new parent account. The database trigger makes them a 'parent'.
+    _new_client().auth.sign_up({"email": email, "password": password})
+
+
+def sign_in(email, password):
+    # Log in, then remember the tokens and who they are for THIS browser session.
+    client = _new_client()
+    result = client.auth.sign_in_with_password({"email": email, "password": password})
+
+    st.session_state.access_token = result.session.access_token
+    st.session_state.refresh_token = result.session.refresh_token
+    st.session_state.user_id = result.user.id
+
+    # Look up their role once (parent or staff) and remember it.
+    profile = (
+        get_supabase().table("profiles")
+        .select("role").eq("id", result.user.id).single().execute()
+    )
+    st.session_state.role = profile.data["role"]
+
+
+def sign_out():
+    # Forget everything about this browser's login.
+    for key in ["access_token", "refresh_token", "user_id", "role"]:
+        st.session_state.pop(key, None)
+
+# @st.cache_resource
+# def get_supabase():
+#     url = st.secrets["SUPABASE_URL"]
+#     key = st.secrets["SUPABASE_KEY"]
+#     return create_client(url, key)
+
+# supabase = get_supabase()
+
+
+# def upload_photo(photo_file):
+#     """Upload an image to Supabase Storage and return its public URL."""
+#     image_bytes = photo_file.getvalue() # raw image data
+#     content_type = photo_file.type or "image/jpeg" # e.g. "image/png"
+#     extension = content_type.split("/")[-1] # "png" or "jpeg"
+#     file_name = f"{uuid.uuid4()}.{extension}" # unique name, e.g. "3f9c...a1.
     
-    supabase.storage.from_("item-photos").upload(file_name, image_bytes, {"content-type": content_type},)
+#     supabase.storage.from_("item-photos").upload(file_name, image_bytes, {"content-type": content_type},)
     
-    return supabase.storage.from_("item-photos").get_public_url(file_name)
+#     return supabase.storage.from_("item-photos").get_public_url(file_name)

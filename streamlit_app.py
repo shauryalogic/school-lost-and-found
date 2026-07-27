@@ -56,16 +56,21 @@ def login_page():
                 st.error("That email or password isn't right.")
 
     with tab_signup:
-        st.caption("For parents. Staff accounts are set up by the school.")
-        email = st.text_input("Email", key="signup_email")
-        password = st.text_input("Password (at least 6 characters)", type="password", key="signup_pw")
-        if st.button("Create account"):
-            try:
-                sign_up(email, password)
-                sign_in(email, password)   # log them straight in
-                st.rerun()
-            except Exception:
-                st.error("Couldn't create that account. Try a different email.")
+            st.caption("For parents. You'll need the code your school sent you.")
+            email = st.text_input("Email", key="signup_email")
+            password = st.text_input("Password (at least 6 characters)", type="password", key="signup_pw")
+            school_code = st.text_input("School code", key="signup_code")
+            if st.button("Create account"):
+                # check the code FIRST — no account is created unless it matches
+                if school_code.strip() != st.secrets.get("SCHOOL_CODE"):
+                    st.error("That school code isn't right. Please check the code your school sent you.")
+                else:
+                    try:
+                        sign_up(email, password)
+                        sign_in(email, password)
+                        st.rerun()
+                    except Exception:
+                        st.error("Couldn't create that account. Try a different email.")
 
 
 def logout_page():

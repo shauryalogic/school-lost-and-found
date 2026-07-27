@@ -34,7 +34,11 @@ def current_user():
 
 def sign_up(email, password):
     # Create a new parent account. The database trigger makes them a 'parent'.
-    _new_client().auth.sign_up({"email": email, "password": password})
+    _new_client().auth.sign_up({
+        "email": email,
+        "password": password,
+        "options": {"data": {"school_id": st.secrets["SCHOOL_ID"]}},
+    })
 
 
 def sign_in(email, password):
@@ -62,13 +66,34 @@ def sign_out():
 supabase = get_supabase()
 
 
+# def upload_photo(photo_file):
+#     """Upload an image to Supabase Storage and return its public URL."""
+#     image_bytes = photo_file.getvalue() # raw image data
+#     content_type = photo_file.type or "image/jpeg" # e.g. "image/png"
+#     extension = content_type.split("/")[-1] # "png" or "jpeg"
+#     file_name = f"{uuid.uuid4()}.{extension}" # unique name, e.g. "3f9c...a1.
+    
+#     supabase.storage.from_("item-photos").upload(file_name, image_bytes, {"content-type": content_type},)
+    
+#     return supabase.storage.from_("item-photos").get_public_url(file_name)
+
 def upload_photo(photo_file):
-    """Upload an image to Supabase Storage and return its public URL."""
-    image_bytes = photo_file.getvalue() # raw image data
-    content_type = photo_file.type or "image/jpeg" # e.g. "image/png"
-    extension = content_type.split("/")[-1] # "png" or "jpeg"
-    file_name = f"{uuid.uuid4()}.{extension}" # unique name, e.g. "3f9c...a1.
-    
-    supabase.storage.from_("item-photos").upload(file_name, image_bytes, {"content-type": content_type},)
-    
-    return supabase.storage.from_("item-photos").get_public_url(file_name)
+    # Build a client and log it in with the current user's wristband,
+    # so BOTH the database part and the storage part carry the login.
+    client = _new_client()
+    client.auth.set_session(
+        st.session_state.access_token,
+        st.session_state.refresh_token,
+    )
+
+    image_bytes = photo_file.getvalue()
+    content_type = photo_file.type or "image/jpeg"
+    extension = content_type.split("/")[-1]
+    file_name = f"{uuid.uuid4()}.{extension}"
+
+    client.storage.from_("item-photos").upload(
+        file_name,
+        image_bytes,
+        {"content-type": content_type},
+    )
+    return client.storage.from_("item-photos").get_public_url(file_name)

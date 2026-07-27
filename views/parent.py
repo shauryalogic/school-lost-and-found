@@ -1,16 +1,9 @@
 from datetime import datetime, timezone
-
 import streamlit as st
+from db import get_supabase, current_user
 
-from db import get_supabase
-
-supabase = get_supabase()
-
-if "my_reservations" not in st.session_state:
-    st.session_state.my_reservations = []
 
 st.title("🔎 Find your child's item")
-
 
 @st.dialog("Reserve this item")
 def reserve_dialog(item):
@@ -28,9 +21,9 @@ def reserve_dialog(item):
                     "status": "reserved",
                     "reservation_comments": note.strip(),
                     "reservation_date": datetime.now(timezone.utc).isoformat(),
+                    "reserved_by": current_user(),
                 }
             ).eq("id", item["id"]).execute()
-            st.session_state.my_reservations.append(item["id"])
             st.rerun()
 
 
@@ -50,9 +43,9 @@ def unreserve_dialog(item):
                     "status": "available",
                     "reservation_comments": None,
                     "reservation_date": None,
+                    "reserved_by": None
                 }
             ).eq("id", item["id"]).execute()
-            st.session_state.my_reservations.remove(item["id"])
             st.rerun()
 
 
@@ -74,8 +67,18 @@ def item_card(item, button_label, button_key, extra_line=None):
                 st.caption(extra_line)
         return st.button(button_label, key=button_key)
 
-count = len(st.session_state.my_reservations)
-tab_all, tab_mine = st.tabs(["All items", f"My reservations ({count})"])
+supabase = get_supabase()
+
+# My reservations = items the database says I reserved.
+mine = (
+    supabase.table("items")
+    .select("*")
+    .eq("reserved_by", current_user())
+    .eq("status", "reserved")
+    .execute()
+).data
+
+tab_all, tab_mine = st.tabs(["All items", f"My reservations ({len(mine)})"])
 
 with tab_all:
     query = st.text_input(
@@ -117,24 +120,11 @@ with tab_all:
                 reserve_dialog(item)
 
 with tab_mine:
-    ids = st.session_state.my_reservations
-    if not ids:
+    if not mine:
         st.info("You haven't reserved anything yet.")
     else:
-        result = (
-            supabase.table("items")
-            .select("*")
-            .in_("id", ids)
-            .eq("status", "reserved")
-            .execute()
-        )
-        mine = result.data
-
-        if not mine:
-            st.info("Your reservations have been collected or released.")
-        else:
-            st.success("Show the Item-Id at the front desk to collect.")
-            for item in mine:
-                # If this card's Un-reserve button was clicked, open the confirm popup.
-                if item_card(item, "Un-reserve", f"unreserve_{item['id']}", extra_line=f"For: {item.get('reservation_comments') or '—'}"):
-                    unreserve_dialog(item)
+        st.success("Show the Item-Id at the front desk to collect.")
+        for item in mine:
+            note_line = f"For: {item.get('reservation_comments') or '—'}"
+            if item_card(item, "Un-reserve", f"unreserve_{item['id']}", extra_line=note_line):
+                unreserve_dialog(item)

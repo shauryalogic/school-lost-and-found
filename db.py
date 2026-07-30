@@ -98,6 +98,7 @@ def upload_photo(photo_file):
     )
     return client.storage.from_("item-photos").get_public_url(file_name)
 
+#delete photo
 def delete_photo(photo_url):
     # Storage needs its OWN freshly-authenticated client — the same reason upload_photo does.
     # set_session reaches the database client but not the storage client, so without this

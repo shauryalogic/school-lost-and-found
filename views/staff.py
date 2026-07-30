@@ -141,10 +141,10 @@ with tab_manage:
     else:
         for item in all_items:
             with st.container(border=True):
-                photo_col, text_col = st.columns([1, 3])
+                photo_col, text_col = st.columns([1, 2])
                 with photo_col:
                     if item.get("photo_url"):
-                        st.image(item["photo_url"], width=90)
+                        st.image(item["photo_url"], width="stretch")
                 with text_col:
                     st.markdown(f"**{item['name']}**")
                     st.caption(

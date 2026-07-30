@@ -53,10 +53,10 @@ def item_card(item, button_label, button_key, extra_line=None):
     # One card design, used by both tabs. It draws the item and returns
     # True if its button was clicked — that's all. 
     with st.container(border=True):
-        photo_col, text_col = st.columns([1, 2])
+        photo_col, text_col = st.columns([1, 2], vertical_alignment="center")
         with photo_col:
             if item.get("photo_url"):
-                st.image(item["photo_url"], width=110)
+                st.image(item["photo_url"], width="stretch")
         with text_col:
             st.markdown(f"**{item['name']}**")
             st.caption(f"Item-Id #{item['item_number']} · {item.get('category') or '—'}")

@@ -169,7 +169,7 @@ with tab_manage:
                 if item["status"] == "reserved":
                     c1, c2, c3 = st.columns(3)
                     with c1:
-                        if st.button("Release", key=f"rel_{item['id']}", width="stretch", type="primary"):
+                        if st.button("Release", key=f"rel_{item['id']}", width="stretch"):
                             confirm_status_change(
                                 item, "released", "Release this item to the family?"
                             )
@@ -187,7 +187,7 @@ with tab_manage:
                 elif item["status"] == "available":
                     c1, c2 = st.columns(2)
                     with c1:
-                        if st.button("Release", key=f"rel_{item['id']}", width="stretch", type="primary"):
+                        if st.button("Release", key=f"rel_{item['id']}", width="stretch"):
                             confirm_status_change(
                                 item, "released", "Release this item?"
                             )

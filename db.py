@@ -97,3 +97,15 @@ def upload_photo(photo_file):
         {"content-type": content_type},
     )
     return client.storage.from_("item-photos").get_public_url(file_name)
+
+def delete_photo(photo_url):
+    # Storage needs its OWN freshly-authenticated client — the same reason upload_photo does.
+    # set_session reaches the database client but not the storage client, so without this
+    # the delete goes out anonymous and is silently refused.
+    client = _new_client()
+    client.auth.set_session(
+        st.session_state.access_token,
+        st.session_state.refresh_token,
+    )
+    file_name = photo_url.split("/")[-1]
+    client.storage.from_("item-photos").remove([file_name])

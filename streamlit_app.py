@@ -38,11 +38,12 @@ import streamlit as st
 
 from db import sign_in, sign_up, sign_out
 
-st.set_page_config(page_title="School Lost & Found", page_icon="🎒")
+st.set_page_config(page_title="FoundYou", page_icon="🧸")
 
 
 def login_page():
-    st.title("🎒 School Lost & Found")
+    st.title("🧸 FoundYou")
+    st.caption("Reuniting kids with what they've lost")
     tab_login, tab_signup = st.tabs(["Log in", "Create account"])
 
     with tab_login:

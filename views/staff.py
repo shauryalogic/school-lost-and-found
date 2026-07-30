@@ -3,11 +3,14 @@
 #st.write("If it's lost, we'll help you find it.")
 #st.write("happy happy happy happy")
 
+
 import streamlit as st
-from db import get_supabase, upload_photo
+from db import get_supabase, upload_photo, delete_photo
 supabase = get_supabase()
 
 from datetime import datetime, timezone
+
+
 
 
 @st.dialog("Please confirm")
@@ -45,8 +48,20 @@ def confirm_delete(item):
             st.rerun()
     with del_col:
         if st.button("Yes, delete"):
+            if item.get("photo_url"):
+                delete_photo(item["photo_url"])
             supabase.table("items").delete().eq("id", item["id"]).execute()
-            st.rerun()
+            st.rerun()    
+        # if st.button("Yes, delete"):
+        #     # remove the photo from storage first (the file name is the last part of its URL)
+        #     if item.get("photo_url"):
+        #         file_name = item["photo_url"].split("/")[-1]
+        #         supabase.storage.from_("item-photos").remove([file_name])
+           
+        #     # then remove the item row
+        #     supabase.table("items").delete().eq("id", item["id"]).execute()
+        #     st.rerun()
+            
 
 tab_log, tab_manage = st.tabs(["Log items", "Manage items"])
 

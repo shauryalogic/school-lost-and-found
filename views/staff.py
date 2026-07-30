@@ -141,7 +141,7 @@ with tab_manage:
     else:
         for item in all_items:
             with st.container(border=True):
-                photo_col, text_col = st.columns([1, 2])
+                photo_col, text_col = st.columns([1, 2], vertical_alignment="center")
                 with photo_col:
                     if item.get("photo_url"):
                         st.image(item["photo_url"], width="stretch")
@@ -169,34 +169,34 @@ with tab_manage:
                 if item["status"] == "reserved":
                     c1, c2, c3 = st.columns(3)
                     with c1:
-                        if st.button("Release", key=f"rel_{item['id']}"):
+                        if st.button("Release", key=f"rel_{item['id']}", width="stretch", type="primary"):
                             confirm_status_change(
                                 item, "released", "Release this item to the family?"
                             )
                     with c2:
-                        if st.button("Cancel reservation", key=f"cxl_{item['id']}"):
+                        if st.button("Cancel reservation", key=f"cxl_{item['id']}", width="stretch"):
                             confirm_status_change(
                                 item, "available",
                                 "Cancel this reservation and return the item?",
                                 clear_reservation=True,
                             )
                     with c3:
-                        if st.button("Delete", key=f"del_{item['id']}"):
+                        if st.button("Delete", key=f"del_{item['id']}", width="stretch"):
                             confirm_delete(item)
 
                 elif item["status"] == "available":
                     c1, c2 = st.columns(2)
                     with c1:
-                        if st.button("Release", key=f"rel_{item['id']}"):
+                        if st.button("Release", key=f"rel_{item['id']}", width="stretch", type="primary"):
                             confirm_status_change(
                                 item, "released", "Release this item?"
                             )
                     with c2:
-                        if st.button("Delete", key=f"del_{item['id']}"):
+                        if st.button("Delete", key=f"del_{item['id']}", width="stretch"):
                             confirm_delete(item)
 
                 else:  # released — no primary action, just cleanup
-                    if st.button("Delete", key=f"del_{item['id']}"):
+                    if st.button("Delete", key=f"del_{item['id']}", width="stretch"):
                         confirm_delete(item)
 
 

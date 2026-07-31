@@ -67,22 +67,22 @@ tab_log, tab_manage = st.tabs(["Log items", "Manage items"])
 
 with tab_log:
     with st.form("item_entry", clear_on_submit=True):
-        st.title("Staff - Item Entry Form")
+        st.title("Log a found item")
         photo = st.file_uploader("Item Photo")
         name = st.text_input("Item Name")
         category = st.text_input("Item Category")
         description = st.text_area("Item Description")
         location = st.text_input("Location Found")
-        submitted = st.form_submit_button("Save")
+        submitted = st.form_submit_button("Save item", type="primary")
     if submitted:
         if not name.strip():
-            st.error("Please enter an item name.")
+            st.error("Please add an item name so parents can recognize it.")
         elif photo is None:
-            st.error("A photo is required to log an item")
+            st.error("Please add a photo — it's how parents spot their child's item.")
         else:
             photo_url = upload_photo(photo)
             supabase.table("items").insert({"name": name, "category": category, "description": description, "location_found": location, "photo_url": photo_url}).execute()
-            st.write("Item Entered Sucessfully") 
+            st.success("Item logged! Parents can see it now.")
             
 
     # The list :
@@ -92,7 +92,7 @@ with tab_log:
     items = result.data
     #st.dataframe(result.data) below code upgared from standard datafarem to pagination and thumbnail
     if not items:
-        st.info("No items logged yet.")
+        st.info("No items logged yet. Add one above and it'll appear here.")
     else:
         df = pd.DataFrame(items)                              # dataframe = what column_config needs
 
@@ -152,7 +152,7 @@ with tab_manage:
         
 
     if not all_items:
-        st.info("No items match that search.")
+        st.info("No items match that search yet. Try a shorter word or check the spelling.")
     else:
         for item in all_items:
             with st.container(border=True):
@@ -167,7 +167,7 @@ with tab_manage:
                         f"· found in {item.get('location_found') or '—'}"
                     )
                     if item.get("reservation_comments"):
-                        st.caption(f"For: {item['reservation_comments']}")
+                        st.caption(f"Reserved for: {item['reservation_comments']}")
 
                     # a coloured status pill — the colour makes state scannable at a glance
                     STATUS_COLOR = {
@@ -184,34 +184,34 @@ with tab_manage:
                 if item["status"] == "reserved":
                     c1, c2, c3 = st.columns(3)
                     with c1:
-                        if st.button("Release", key=f"rel_{item['id']}", width="stretch"):
+                        if st.button("Release", key=f"rel_{item['id']}", icon=":material/check_circle:", width="stretch"):
                             confirm_status_change(
                                 item, "released", "Release this item to the family?"
                             )
                     with c2:
-                        if st.button("Cancel reservation", key=f"cxl_{item['id']}", width="stretch"):
+                        if st.button("Cancel reservation", key=f"cxl_{item['id']}", icon=":material/undo:", width="stretch"):
                             confirm_status_change(
                                 item, "available",
                                 "Cancel this reservation and return the item?",
                                 clear_reservation=True,
                             )
                     with c3:
-                        if st.button("Delete", key=f"del_{item['id']}", width="stretch"):
+                        if st.button("Delete", key=f"del_{item['id']}", icon=":material/delete:", width="stretch"):
                             confirm_delete(item)
 
                 elif item["status"] == "available":
                     c1, c2 = st.columns(2)
                     with c1:
-                        if st.button("Release", key=f"rel_{item['id']}", width="stretch"):
+                        if st.button("Release", key=f"rel_{item['id']}", icon=":material/check_circle:", width="stretch"):
                             confirm_status_change(
                                 item, "released", "Release this item?"
                             )
                     with c2:
-                        if st.button("Delete", key=f"del_{item['id']}", width="stretch"):
+                        if st.button("Delete", key=f"del_{item['id']}", icon=":material/delete:", width="stretch"):
                             confirm_delete(item)
 
                 else:  # released — no primary action, just cleanup
-                    if st.button("Delete", key=f"del_{item['id']}", width="stretch"):
+                    if st.button("Delete", key=f"del_{item['id']}", icon=":material/delete:", width="stretch"):
                         confirm_delete(item)
 
 

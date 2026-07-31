@@ -12,7 +12,7 @@ def reserve_dialog(item):
     st.write(f"**Item-Id #{item['item_number']} — {item['name']}**")
     note = st.text_area("Who is this for?", placeholder="Maya, Room 12, Parent=Stacy")
 
-    if st.button("Confirm reservation"):
+    if st.button("Confirm reservation", type="primary"):
         if not note.strip():
             st.error("Please tell us who this is for.")
         else:
@@ -37,7 +37,7 @@ def unreserve_dialog(item):
         if st.button("Keep it"):
             st.rerun()
     with cancel_col:
-        if st.button("Yes, un-reserve"):
+        if st.button("Yes, cancel"):
             supabase.table("items").update(
                 {
                     "status": "available",
@@ -49,7 +49,8 @@ def unreserve_dialog(item):
             st.rerun()
 
 
-def item_card(item, button_label, button_key, extra_line=None):
+
+def item_card(item, button_label, button_key, extra_line=None, button_type="secondary", button_icon=None):
     # One card design, used by both tabs. It draws the item and returns
     # True if its button was clicked — that's all. 
     with st.container(border=True):
@@ -65,7 +66,7 @@ def item_card(item, button_label, button_key, extra_line=None):
             )
             if extra_line:
                 st.caption(extra_line)
-        return st.button(button_label, key=button_key)
+        return st.button(button_label, key=button_key, type=button_type, icon=button_icon)
 
 supabase = get_supabase()
 
@@ -108,7 +109,7 @@ with tab_all:
         ]
 
     if not items:
-        st.info("No matching items are available right now.")
+        st.info("No items match that search yet — staff add new ones all the time, so check back soon.")
     else:
         per_page = 5
         total_pages = (len(items) + per_page - 1) // per_page
@@ -116,15 +117,15 @@ with tab_all:
         start = (page - 1) * per_page
 
         for item in items[start : start + per_page]:
-            if item_card(item, "Reserve this item", f"reserve_{item['id']}"):
+            if item_card(item, "Reserve this item", f"reserve_{item['id']}", button_type="primary", button_icon=":material/bookmark_add:"):
                 reserve_dialog(item)
 
 with tab_mine:
     if not mine:
-        st.info("You haven't reserved anything yet.")
+        st.info("No reservations yet. When you reserve an item, it'll show up here so you can pick it up.")
     else:
-        st.success("Show the Item-Id at the front desk to collect.")
+        st.success("Show the Item-Id on each item at the front desk to pick it up.")
         for item in mine:
-            note_line = f"For: {item.get('reservation_comments') or '—'}"
-            if item_card(item, "Un-reserve", f"unreserve_{item['id']}", extra_line=note_line):
+            note_line = f"Reserved for: {item.get('reservation_comments') or '—'}"
+            if item_card(item, "Cancel reservation", f"unreserve_{item['id']}", extra_line=note_line):
                 unreserve_dialog(item)

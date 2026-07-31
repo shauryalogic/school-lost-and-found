@@ -49,7 +49,7 @@ def login_page():
     with tab_login:
         email = st.text_input("Email", key="login_email")
         password = st.text_input("Password", type="password", key="login_pw")
-        if st.button("Log in"):
+        if st.button("Log in", type="primary"):
             try:
                 sign_in(email, password)
                 st.rerun()
@@ -61,7 +61,7 @@ def login_page():
             email = st.text_input("Email", key="signup_email")
             password = st.text_input("Password (at least 6 characters)", type="password", key="signup_pw")
             school_code = st.text_input("School code", key="signup_code")
-            if st.button("Create account"):
+            if st.button("Create account", type="primary"):
                 # check the code FIRST — no account is created unless it matches
                 if school_code.strip() != st.secrets.get("SCHOOL_CODE"):
                     st.error("That school code isn't right. Please check the code your school sent you.")
@@ -82,18 +82,33 @@ def logout_page():
 # Decide what pages exist based on who is logged in.
 role = st.session_state.get("role")
 
+if role is not None:
+    st.logo(
+        "assets/foundyou_logo.png",
+        icon_image="assets/foundyou_icon.png",
+        size="large",
+    )
+
+
 if role is None:
     # Not logged in — the ONLY reachable page is the login screen.
     st.navigation([st.Page(login_page, title="Log in")]).run()
 
 elif role == "staff":
+    
     st.navigation([
-        st.Page("views/staff.py", title="Staff", icon="📋"),
-        st.Page(logout_page, title="Sign out", icon="🚪"),
+        # st.Page("views/staff.py", title="Staff", icon="📋"),
+        # st.Page(logout_page, title="Sign out", icon="🚪"),
+        st.Page("views/staff.py", title="Staff", icon=":material/inventory_2:"),
+        st.Page(logout_page, title="Sign out", icon=":material/logout:"),
     ]).run()
 
+
 else:  # parent
+   
     st.navigation([
-        st.Page("views/parent.py", title="Find an item", icon="🔎"),
-        st.Page(logout_page, title="Sign out", icon="🚪"),
+        # st.Page("views/parent.py", title="Find an item", icon="🔎"),
+        # st.Page(logout_page, title="Sign out", icon="🚪"),
+        st.Page("views/parent.py", title="Find an item", icon=":material/search:"),
+        st.Page(logout_page, title="Sign out", icon=":material/logout:"),
     ]).run()

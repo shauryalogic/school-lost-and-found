@@ -68,23 +68,23 @@ tab_log, tab_manage = st.tabs(["Log items", "Manage items"])
 with tab_log:
     with st.form("item_entry", clear_on_submit=True):
         st.title("Log a found item")
-        photo = st.file_uploader("Item Photo")
-        name = st.text_input("Item Name")
-        category = st.text_input("Item Category")
-        description = st.text_area("Item Description")
-        location = st.text_input("Location Found")
+        st.caption("\\* Required")
+        photo = st.file_uploader("Item Photo *")
+        name = st.text_input("Item Name *")
+        category = st.text_input("Item Category (optional)")
+        description = st.text_area("Item Description (optional)")
+        location = st.text_input("Location Found (optional)")
         submitted = st.form_submit_button("Save item", type="primary")
     if submitted:
-        if not name.strip():
-            st.error("Please add an item name so parents can recognize it.")
-        elif photo is None:
+        if photo is None:
             st.error("Please add a photo — it's how parents spot their child's item.")
+        elif not name.strip():
+            st.error("Please add an item name so parents can recognize it.")
         else:
             photo_url = upload_photo(photo)
             supabase.table("items").insert({"name": name, "category": category, "description": description, "location_found": location, "photo_url": photo_url}).execute()
             st.success("Item logged! Parents can see it now.")
             
-
     # The list :
     import pandas as pd
     st.subheader("Logged items")

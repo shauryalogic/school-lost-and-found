@@ -104,6 +104,7 @@ Each found item is one row in an `items` table:
 | `reservation_date` | `date` | When it was reserved |
 | `released_date` | `date` | When it was handed back to the family |
 
+A second table, `profiles`, links each account to its `role` (parent or staff) and its `school_id`, which is what powers the role-based access and the school-code sign-up.
 ---
 
 ## Testing

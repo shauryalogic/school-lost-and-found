@@ -112,7 +112,7 @@ A second table, `profiles`, links each account to its `role` (parent or staff) a
 
 ## Testing
 
-I tested FoundYou with a written test plan of **50+ cases across desktop and phone**, covering the full flow — logging, searching, reserving, releasing, permissions, and validation. I found and fixed real issues along the way, including a form that cleared itself on a validation error and improvements to how the app works on phones.
+I tested FoundYou with a written test plan of **50+ cases across desktop and phone**, covering the full flow — logging, searching, reserving, releasing, permissions, and validation. Testing caught real issues I then fixed, including improvements to how the app works on phones.
 
 ---
 

@@ -1,5 +1,8 @@
-import uuid
 
+# This file is the bridge between my app and Supabase.
+# It handles logging in/out and every talk to the database and photo storage,
+# so the page files (parent.py / staff.py) never have to worry about auth themselves.
+import uuid
 import streamlit as st
 from supabase import create_client
 
@@ -7,9 +10,7 @@ from supabase import create_client
 
 def _new_client():
     # Build a fresh Supabase client.
-    # We do NOT cache this anymore. Before auth, one shared client was fine because
-    # everyone was anonymous. Now the client carries WHO is logged in, so a shared
-    # client would leak one person's login to everyone. Each run gets its own.
+    # client carries WHO is logged in 
     url = st.secrets["SUPABASE_URL"]
     key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
@@ -82,6 +83,7 @@ def upload_photo(photo_file):
         image_bytes,
         {"content-type": content_type},
     )
+    # Return the public URL — that short piece of text is what gets saved on the item's row.
     return client.storage.from_("item-photos").get_public_url(file_name)
 
 #delete photo

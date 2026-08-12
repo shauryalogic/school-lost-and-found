@@ -1,16 +1,15 @@
-#import streamlit as st
-#st.title("School Lost & Found")
-#st.write("If it's lost, we'll help you find it.")
-#st.write("happy happy happy happy")
-
+# This is the staff side of the app. Staff do two things here:
+# log new found items (with a photo) in the "Log items" tab, and manage
+# existing items (release, cancel a reservation, or delete) in the "Manage items" tab.
+# Items move through a simple state machine: available -> reserved -> released, and a
+# reserved item can also be sent back to available (cancel). The Manage tab only ever
+# shows the buttons that are valid from an item's current state.
 
 import streamlit as st
+import pandas as pd
 from db import get_supabase, upload_photo, delete_photo
 supabase = get_supabase()
-
 from datetime import datetime, timezone
-
-
 
 
 @st.dialog("Please confirm")
@@ -23,6 +22,7 @@ def confirm_status_change(item, new_status, message, clear_reservation=False):
     if new_status == "released":
         changes["released_date"] = datetime.now(timezone.utc).isoformat()
     if clear_reservation:
+        # Cancelling wipes the child's name off the item before it goes back in the pool.
         changes["reservation_comments"] = None
         changes["reservation_date"] = None
 
@@ -32,6 +32,8 @@ def confirm_status_change(item, new_status, message, clear_reservation=False):
             st.rerun()
     with go_col:
         if st.button("Yes, do it"):
+            # .eq("id", ...) pins the update to exactly this one row. Without a filter like
+            # this, an update would hit EVERY row in the table — so it's essential, not optional.
             supabase.table("items").update(changes).eq("id", item["id"]).execute()
             st.rerun()
 
@@ -48,24 +50,19 @@ def confirm_delete(item):
             st.rerun()
     with del_col:
         if st.button("Yes, delete"):
+            # Delete the photo from storage FIRST, then the row — so no orphaned image is
+            # left behind and no child's photo lingers after its record is gone.
             if item.get("photo_url"):
                 delete_photo(item["photo_url"])
             supabase.table("items").delete().eq("id", item["id"]).execute()
             st.rerun()    
-        # if st.button("Yes, delete"):
-        #     # remove the photo from storage first (the file name is the last part of its URL)
-        #     if item.get("photo_url"):
-        #         file_name = item["photo_url"].split("/")[-1]
-        #         supabase.storage.from_("item-photos").remove([file_name])
-           
-        #     # then remove the item row
-        #     supabase.table("items").delete().eq("id", item["id"]).execute()
-        #     st.rerun()
             
 
 tab_log, tab_manage = st.tabs(["Log items", "Manage items"])
 
 with tab_log:
+    # The intake form. Photo and name are required; category / description / location are
+    # optional so logging stays fast (a staff member can add an item in a few seconds).
     with st.form("item_entry", clear_on_submit=True):
         st.title("Log a found item")
         st.caption("\\* Required")
@@ -76,21 +73,25 @@ with tab_log:
         location = st.text_input("Location Found (optional)")
         submitted = st.form_submit_button("Save item", type="primary")
     if submitted:
+        # Check the two required fields before saving anything.
         if photo is None:
             st.error("Please add a photo — it's how parents spot their child's item.")
         elif not name.strip():
             st.error("Please add an item name so parents can recognize it.")
         else:
+            # Upload the photo, get its URL back, then save the item row with that URL.
+            # (status defaults to 'available' and the Item-Id auto-increments in the database.)
             photo_url = upload_photo(photo)
             supabase.table("items").insert({"name": name, "category": category, "description": description, "location_found": location, "photo_url": photo_url}).execute()
             st.success("Item logged! Parents can see it now.")
             
-    # The list :
-    import pandas as pd
+    # Below the form, show every item that's been logged so far, newest first.
     st.subheader("Logged items")
     result = supabase.table("items").select("*").order("created_at", desc=True).execute()
     items = result.data
-    #st.dataframe(result.data) below code upgared from standard datafarem to pagination and thumbnail
+
+    # I upgraded this from a plain st.dataframe to a paginated table that also
+    # shows the photo as a thumbnail, so it's easier to scan when there are lots of items.
     if not items:
         st.info("No items logged yet. Add one above and it'll appear here.")
     else:
@@ -134,7 +135,10 @@ with tab_manage:
     )
     all_items = result.data
 
-    # Omni-search: one box matches across several fields.
+    # Omni-search: one box matches across several fields at once, so staff can type an
+    # Item-Id, an item name, or the note about who it's for. (On the STAFF side it's fine to
+    # search reservation_comments; on the parent side I deliberately leave that field out,
+    # because it holds children's names.)
     if search:
         s = search.lower()
         all_items = [
@@ -144,7 +148,8 @@ with tab_manage:
             or s in (it.get("description") or "").lower()
             or s in (it.get("reservation_comments") or "").lower()
         ]
-        #below lines sort the all_items in status of orders. It assigns value 9 if no status is found
+        # Sort the results so reserved items come first, then available, then released.
+        # Anything with an unknown status gets 9 so it falls to the bottom.
         STATUS_ORDER = {"reserved": 0, "available": 1, "released": 2}
         def rank(it):
             return STATUS_ORDER.get(it["status"], 9)
@@ -181,6 +186,8 @@ with tab_manage:
                     )
 
                 # Show only the buttons valid for this item's state.
+                # A released item is finished, so it only offers Delete;
+                # an invalid jump is impossible because that button simply isn't drawn.
                 if item["status"] == "reserved":
                     c1, c2, c3 = st.columns(3)
                     with c1:

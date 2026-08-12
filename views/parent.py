@@ -1,3 +1,6 @@
+# This is the parent side of the app: parents browse the available items,
+# reserve one, and see their own reservations. Everything a parent can do
+# lives on this page.
 from datetime import datetime, timezone
 import streamlit as st
 from db import get_supabase, current_user
@@ -5,6 +8,9 @@ from db import get_supabase, current_user
 
 st.title("🔎 Find your child's item")
 
+# Pop-up that lets a parent claim an item. The note field is required so staff
+# know who to hand it to at pickup. Reserving flips the item to "reserved" and
+# stamps who reserved it and when.
 @st.dialog("Reserve this item")
 def reserve_dialog(item):
     if item.get("photo_url"):
@@ -16,6 +22,10 @@ def reserve_dialog(item):
         if not note.strip():
             st.error("Please tell us who this is for.")
         else:
+            # reserved_by = current_user() records that THIS parent made the reservation.
+            # That one field powers the private "My reservations" list below and lets the
+            # database guarantee one parent can't see or cancel another parent's reservation.
+            # .eq("id", ...) makes the change apply to exactly this one item, no others.
             supabase.table("items").update(
                 {
                     "status": "reserved",
@@ -26,7 +36,8 @@ def reserve_dialog(item):
             ).eq("id", item["id"]).execute()
             st.rerun()
 
-
+# Pop-up to undo a reservation. It clears the reservation fields and sets the
+# item back to "available" so another family can find it.
 @st.dialog("Cancel this reservation?")
 def unreserve_dialog(item):
     st.write(f"**Item-Id #{item['item_number']} — {item['name']}**")
@@ -38,6 +49,9 @@ def unreserve_dialog(item):
             st.rerun()
     with cancel_col:
         if st.button("Yes, cancel"):
+            # Setting reserved_by and the reservation fields back to None releases the item
+            # AND scrubs the child's name from it, so nothing personal stays once it's
+            # back in the public pool.
             supabase.table("items").update(
                 {
                     "status": "available",
@@ -87,6 +101,8 @@ with tab_all:
         placeholder="Search by name, description, or category",
         label_visibility="collapsed",
     )
+    # Only available items are ever fetched here, so a parent never even sees items that
+    # someone else has already reserved.
     result = (
         supabase.table("items")
         .select("*")
@@ -111,6 +127,8 @@ with tab_all:
     if not items:
         st.info("No items match that search yet — staff add new ones all the time, so check back soon.")
     else:
+        # Show 5 items per page. The +per_page-1 is a rounding trick so a
+        # leftover partial page still counts as one whole page.
         per_page = 5
         total_pages = (len(items) + per_page - 1) // per_page
         page = st.pagination(num_pages=total_pages) if total_pages > 1 else 1

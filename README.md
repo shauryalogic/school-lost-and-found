@@ -4,10 +4,6 @@
 
 🔗 **Live app:** https://found-you.streamlit.app
 
-![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
-
 ---
 
 ## What it is
@@ -134,4 +130,5 @@ Features I deliberately kept out of v1 so the core app would be reliable, and wo
 ## About
 
 Built by **Shaurya** 
+
 FoundYou is my first real-world project — turning a frustrating experience I remembered from childhood into something that could help the next kid.

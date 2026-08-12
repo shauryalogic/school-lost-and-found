@@ -3,6 +3,11 @@
 **A lost-and-found web app for schools — so a parent can find their child's lost item from home.**
 
 🔗 **Live app:** https://found-you.streamlit.app
+
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
+
 ---
 
 ## What it is
@@ -10,6 +15,7 @@
 When a young child loses something at school, it can be more than just a lost object — a small or anxious child often can't dig through a crowded lost-and-found bin or remember where they left it, and a parent can't always come to school to look.
 
 FoundYou connects **school staff** and **parents**. Staff log found items with a photo in a few seconds; parents search or browse those items from their phone, recognize their child's item, and reserve it for pickup. I designed it with younger children and children with special needs especially in mind.
+
 
 
 ---
@@ -105,6 +111,7 @@ Each found item is one row in an `items` table:
 | `released_date` | `date` | When it was handed back to the family |
 
 A second table, `profiles`, links each account to its `role` (parent or staff) and its `school_id`, which is what powers the role-based access and the school-code sign-up.
+
 ---
 
 ## Testing

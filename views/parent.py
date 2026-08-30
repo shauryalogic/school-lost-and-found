@@ -98,7 +98,7 @@ tab_all, tab_mine = st.tabs(["All items", f"My reservations ({len(mine)})"])
 with tab_all:
     query = st.text_input(
         "Search",
-        placeholder="Search by name, description, or category",
+        placeholder="Search by name, description, category, etc...",
         label_visibility="collapsed",
     )
     # Only available items are ever fetched here, so a parent never even sees items that
@@ -122,6 +122,7 @@ with tab_all:
             or q in (it.get("name") or "").lower()
             or q in (it.get("description") or "").lower()
             or q in (it.get("category") or "").lower()
+            or q in (it.get("location_found") or "").lower()
         ]
 
     if not items:

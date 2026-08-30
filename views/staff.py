@@ -147,6 +147,7 @@ with tab_manage:
             or s in (it.get("name") or "").lower()
             or s in (it.get("description") or "").lower()
             or s in (it.get("reservation_comments") or "").lower()
+            or s in (it.get("location_found") or "").lower()
         ]
         # Sort the results so reserved items come first, then available, then released.
         # Anything with an unknown status gets 9 so it falls to the bottom.

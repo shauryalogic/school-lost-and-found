@@ -18,18 +18,13 @@ FoundYou connects **school staff** and **parents**. Staff log found items with a
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><strong>Parent view &mdash; browse &amp; reserve (desktop)</strong></td>
-    <td align="center"><strong>On mobile</strong></td>
-  </tr>
-  <tr>
-    <td valign="top"><img src="screenshots/parent-view.png" alt="Parent view showing found items as photo cards" width="560"></td>
-    <td valign="top"><img src="screenshots/mobile-view.png" alt="FoundYou running on a phone" width="230"></td>
-  </tr>
-</table>
+<!-- Add 2-3 screenshots here so the repo shows the app at a glance.
+     Put image files in a /screenshots folder in the repo, then reference them like:
+     ![Parent view](screenshots/parent-search.png)
+     ![Staff view](screenshots/staff-log.png)
+     Use dummy data only - no real student information. -->
 
-*Parents see found items as photo cards, can search across several fields, and reserve their child's item &mdash; from a computer or a phone. All data shown is dummy data for testing.*
+*Screenshots coming soon — or try the [live app](https://found-you.streamlit.app).*
 
 ---
 

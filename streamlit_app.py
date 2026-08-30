@@ -5,13 +5,11 @@ import streamlit as st
 
 from db import sign_in, sign_up, sign_out
 
-#st.set_page_config(page_title="FoundYou", page_icon="🧸")
 st.set_page_config(page_title="FoundYou", page_icon="assets/foundyou_icon.png")
 
 # The login screen. Two tabs: existing users log in, and new parents create an
 # account (which needs the school code, checked below before any account is made).
 def login_page():
-    #st.title("🧸 FoundYou")
     st.image("assets/foundyou_logo.png", width=300)
     st.caption("Reuniting kids with what they've lost")
     tab_login, tab_signup = st.tabs(["Log in", "Create account"])

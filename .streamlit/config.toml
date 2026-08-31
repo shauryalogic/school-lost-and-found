@@ -4,3 +4,5 @@ backgroundColor = "#FBF7F2"           # warm cream — main page background
 secondaryBackgroundColor = "#F3E9DE"  # warm sand — sidebar, cards, input fields
 textColor = "#3D342E"                 # soft dark brown — easier than pure black
 font = "sans serif"
+[client]
+toolbarMode = "minimal"

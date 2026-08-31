@@ -6,14 +6,6 @@ import streamlit as st
 from db import sign_in, sign_up, sign_out
 
 st.set_page_config(page_title="FoundYou", page_icon="assets/foundyou_icon.png")
-hide_chrome = """
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    </style>
-"""
-st.markdown(hide_chrome, unsafe_allow_html=True)
 
 # The login screen. Two tabs: existing users log in, and new parents create an
 # account (which needs the school code, checked below before any account is made).
